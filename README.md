@@ -1,6 +1,6 @@
 # ctrash
 
-CLI trash management done right - light, fast, feature-full. Written in C.
+CLI trash management done right - light, fast, feature-full. Written in C++.
 
 ## This repo is a very rough WIP!
 
@@ -15,7 +15,7 @@ Definitely not ready to even test just yet :P But! If you'd like to contribute, 
     - BUT the output should be a prettified table, with customisable column-row sizes, wrapping, terminal
       width-detection, and paging
     - Respect PAGER env-var for paging mode, but allow manual setting within config/within cli options
-- Fast, fast, fast! Nothing but the cleanest fastest lightest C we can write!
+- Fast, fast, fast! Nothing but the cleanest fastest lightest C++ we can write!
 - Completions - fish, bash, zsh, what else?
 - Support for alerts and/or actions when trash hits user-set thresholds - will generate config format first
 - Write up a contribution and code style-guideline list
