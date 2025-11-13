@@ -12,10 +12,16 @@ Definitely not ready to even test just yet :P But! If you'd like to contribute, 
   - BUT the output should be a prettified table, with customisable column-row sizes, wrapping, terminal width-detection, and paging
   - Respect PAGER env-var for paging mode, but allow manual setting within config/within cli options
 - Fast, fast, fast! Nothing but the cleanest fastest lightest C we can write!
+- Completions - fish, bash, zsh, what else?
+- Support for alerts and/or actions when trash hits user-set thresholds - will generate config format first
+- Write up a contribution and code style-guideline list
+- Write up feature request and bug report templates
+- Generate workflows.
+- Automate packaging and publishing on various distros
 
 Not sure if I'm missing anything, but I shall update it here if so :]
 
 ### Possible extra features?
-- Tray management? systemd or cron timer support?
+- Tray management? systemd and cron timer support?
 - MacOS support? Or even...*shudder* Windows support?
 - Feel free to submit feature requests :]
