@@ -1,10 +1,10 @@
 /**
  * @file    trash.hpp
  * @brief   Contains ctrash namespace.
- * 
+ *
  * Most stuff is in here, from trash_object typedef to
  * static functions that handle trashing,
- * to the trash_container object which holds trash 
+ * to the trash_container object which holds trash
  * locations and relevant metadata.
  */
 #pragma once
@@ -200,6 +200,13 @@ namespace ctrash
          * We should be aiming to manage all trashed files as a new object class,
          * and this will allow us to include better completions for this as well.
          * It also lets us handle file metadata better than typedef-ing.
+         */
+
+        /* TODO: It might be worth moving this to its own repo, to have a
+         * full-featured libtrash library for C++ trash handling, and in that
+         * have full OS-specific trash definitions. Alternatively, we can handle
+         * it all under this repo, and just have it be included within ctrash.
+         * It's worth considering early on at the least.
          */
 
         /**
