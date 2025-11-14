@@ -1,0 +1,17 @@
+Style:
+  FullyQualifiedNamespaces: true
+  QuotedHeaders: "src/.*"
+  AngledHeaders: ["path/sdk/.*", "third-party/.*"]
+Diagnostics:
+  ClangTidy:
+    Add: modernize*
+#    Remove: modernize-use-trailing-return-type
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+InlayHints:
+  BlockEnd: true
+  DefaultArguments: true
+Hover:
+  ShowAKA: true
+Documentation:
+  CommentFormat: Doxygen
