@@ -6,7 +6,7 @@ project(
     default_options : [
         'cpp_std=c++20',
         'buildtype=release',
-        'default_library=static',
+        'default_library=shared',
         'auto_features=auto',
         'optimization=3'
     ],
@@ -84,14 +84,14 @@ man_files = files(
 
 inc_dirs = ['include']
 
-libtrash = library('ctrash', 'src/trash.cpp')
+libtrash = library('libtrash.so', 'src/trash.cpp')
 
 executable(
     'ctrash',
     [src_files],
     dependencies : [], # can place dependencies external here.
     include_directories : inc_dirs,
-    link_with : libtrash,
+    link_with : libtrash.so,
     install : true
 )
 
