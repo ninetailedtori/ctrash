@@ -30,11 +30,12 @@ namespace ctrash
         symlink
     };
 
-    #if defined _WIN32 || defined _WIN64 || defined __CYGWIN__
+#if defined _WIN32 || defined _WIN64 || defined __CYGWIN__
     using metadata_type = struct _stat;
-    #elif defined __APPLE__ || __MACH__ || __FreeBSD__ || __linux__ || unix || defined __unix || defined __unix__
+#elif defined __APPLE__ || __MACH__ || __FreeBSD__ || __linux__ || unix ||     \
+        defined __unix || defined __unix__
     using metadata_type = struct stat;
-    #endif
+#endif
 
     /**
      * @brief This class is for trashed items, and holds all required metadata
