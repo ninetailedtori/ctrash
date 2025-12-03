@@ -14,6 +14,7 @@ project(
 
 compiler = meson.get_compiler('cpp')
 
+
 cpp_args = []
 cpp_link_args = []
 
@@ -47,11 +48,7 @@ endif
 add_global_arguments(cpp_args, language : 'cpp')
 add_global_link_arguments(cpp_link_args, language : 'cpp')
 
-is_linux = host_machine.system() == 'linux'
-is_dragonfly = host_machine.system() == 'dragonfly'
-is_freebsd = host_machine.system() == 'freebsd'
-is_netbsd = host_machine.system() == 'netbsd'
-is_openbsd = host_machine.system() == 'openbsd'
+system = host_machine.system()
 
 prefix = get_option('prefix')
 sysconfdir = get_option('sysconfdir')
@@ -74,7 +71,7 @@ if systemd.found()
 endif
 
 src_files = files(
-    'src/trash.cpp',
+    'src/trash.hpp',
     'src/ctrash.cpp'
 )
 
@@ -91,7 +88,7 @@ executable(
     [src_files],
     dependencies : [], # can place dependencies external here.
     include_directories : inc_dirs,
-    link_with : libtrash.so,
+    #link_with : libtrash.so,
     install : true
 )
 

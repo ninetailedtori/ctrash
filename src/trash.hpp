@@ -11,73 +11,155 @@
 
 #include <filesystem>
 #include <sys/stat.h>
+#include <vector>
 
 namespace ctrash
 {
+    /**
+     * @brief This contains all IDs of any trash_contexts that exist at any one
+     * time.
+     *
+     * Used internally to validate that no two trash_contexts share the same ID.
+     */
+    static std::vector<std::uint8_t> all_contexts{};
+
+    enum item_type
+    {
+        dir,
+        file,
+        symlink
+    };
+
     #if defined _WIN32 || defined _WIN64 || defined __CYGWIN__
-    inline static const char *_os = "WIN";
-    #elif defined __APPLE__ || __MACH__
-    inline static const char *_os = "APPLE";
-    #elif defined __FreeBSD__
-    inline static const char *_os = "FreeBSD";
-    #elif defined __linux__
-    inline static const char *_os = "LINUX";
-    #elif defined unix || defined __unix || defined __unix__
-    inline static const char *_os = "UNIX";
+    using metadata_type = struct _stat;
+    #elif defined __APPLE__ || __MACH__ || __FreeBSD__ || __linux__ || unix || defined __unix || defined __unix__
+    using metadata_type = struct stat;
     #endif
 
     /**
-     * @brief Holds file metadata
-     *
-     * @param {dev_t}       st_dev      ID of device containing file
-     * @param {ino_t}       st_ino      inode number
-     * @param {mode_t}      st_mode     protection
-     * @param {nlink_t}     st_nlink    number of hard links
-     * @param {uid_t}       st_uid      user ID of owner
-     * @param {gid_t}       st_gid      group ID of owner
-     * @param {dev_t}       st_rdev     device ID (if special file)
-     * @param {off_t}       st_size     total size, in bytes
-     * @param {blksize_t}   st_blksize  blocksize for file system I/O
-     * @param {blkcnt_t}    st_blocks   number of 512B blocks allocated
-     * @param {time_t}      st_atime    time of last access
-     * @param {time_t}      st_mtime    time of last modification
-     * @param {time_t}      st_ctime    time of last status change
+     * @brief This class is for trashed items, and holds all required metadata
+     * for lookup and manipulation.
      */
-    using f_metadata = struct stat;
-
-    /**
-     * @brief Trash location class, with labelling and handling
-     */
-    class trash
+    class trash_item
     {
     private:
         /**
-         * @brief Name of trash object
+         * @brief System-specific ID for the trashed item.
          */
-        std::string t_name;
+        const char *id;
         /**
-         * @brief Description of trash object
+         * @brief Name of the trashed item.
          */
-        std::string t_description;
+        const char *name;
+        /**
+         * @brief Original parent of the trashed item.
+         */
+        const std::filesystem::path parent;
+        /**
+         * @brief Holds the trashed item's metadata.
+         */
+        item_type type = std::filesystem::is_directory(parent) ? dir
+                         : std::filesystem::is_symlink(parent) ? symlink
+                                                               : file;
+        metadata_type metadata;
+        /**
+         * @brief Time the trashed item has been deleted.
+         */
+        std::uint64_t ti_deleted{};
+
+    public:
+        // Basic Constructors
+
+        trash_item() = delete;
 
         /**
-         * @brief Path to trash location
+         * @brief Location Constructor
+         *
+         * @param location Original location of trashed item.
          */
-        std::filesystem::path t_location;
+        explicit trash_item(std::filesystem::path location);
+
+        // Copy/Move Constructors
+
+        /**
+         * @brief Copy constructor
+         *
+         * @param other Trashed item to copy
+         */
+        trash_item(const trash_item &other) = delete;
+
+        /**
+         * @brief Move constructor
+         *
+         * @param other Trashed item to move
+         */
+        trash_item(trash_item &&other) noexcept;
+
+        // Destructor
+
+        /**
+         * @brief Destructor
+         */
+        ~trash_item();
+
+        // Getters/Setters
+
+        // None of these should be accessed by reference and thus changed.
+        [[nodiscard]] auto _id() const -> const char *;
+        [[nodiscard]] auto _name() const -> const char *;
+        [[nodiscard]] auto _parent() const -> std::filesystem::path;
+    };
+
+    /**
+     * @brief Trash location
+     *
+     * This class is intended to label a trash location, but also provide a
+     * context for item trashing manipulation, whether adding or removing from
+     * said trash location object.
+     */
+    class trash_context
+    {
+    private:
+        /**
+         * @brief Unique ID for trash location object.
+         */
+        uint8_t id;
+        /**
+         * @brief Name of the trash location
+         */
+        char *name;
+        /**
+         * @brief Description of the trash location
+         */
+        char *description;
+        /**
+         * @brief Path to the trash location
+         */
+        std::filesystem::path location;
+        /**
+         * @brief Number of items in this trash location.
+         */
+        uint8_t count;
+        /**
+         * @brief Vector containing all trashed items contained in this trash
+         * location.
+         */
+        std::vector<trash_item> items;
 
     public:
         // Basic Constructors
 
         /**
-         * @brief Remove default constructor
+         * @brief Default constructor
          */
-        trash() = delete;
+        trash_context() = default;
 
         /**
          * @brief Name Constructor.
+         *
          * @param name Name of trash object
          */
-        explicit trash(std::string name);
+        explicit trash_context(std::string name);
 
         /**
          * @brief Location Constructor
@@ -85,147 +167,150 @@ namespace ctrash
          * Name will be assigned to the trash path.
          * @param location Path to trash location
          */
-        explicit trash(const std::filesystem::path &location);
+        explicit trash_context(const std::filesystem::path &location);
 
         /**
          * @brief Initializer List Constructor
+         *
          * @param name Name of trash object
          * @param description Description of trash object
          * @param location Path to trash location
          */
-        trash
-        (
-            std::string name,
-            std::string description,
-            std::filesystem::path location
-        );
+        trash_context(
+                const char *name,
+                const char *description,
+                std::filesystem::path location);
 
         // Copy/Move Constructors
 
         /**
          * @brief Copy constructor
+         *
          * @param other Trash object to copy
          */
-        trash(const trash &other);
+        trash_context(const trash_context &other);
 
         /**
          * @brief Move constructor
+         *
          * @param other Trash object to move
          */
-        trash(trash &&other) noexcept;
+        trash_context(trash_context &&other) noexcept;
 
         // Destructor
 
         /**
          * @brief Destructor
          */
-        ~trash();
+        ~trash_context();
 
         // Getters/Setters
 
         /**
          * @brief Setter
+         *
          * @return t_name
          */
-        auto name() -> std::string &;
+        auto _name() -> std::string &;
 
         /**
          * @brief Setter
+         *
          * @return t_description
          */
-        auto description() -> std::string &;
+        auto _description() -> std::string &;
 
         /**
          * @brief Setter
+         *
+         * When changing the path, remember to move all items to the new trash
+         * location.
          * @return t_location
          */
-        auto location() -> std::filesystem::path &;
+        auto _location() -> std::filesystem::path &;
 
         /**
          * @brief Getter
+         *
          * @return t_name
          */
-        [[nodiscard]] auto name() const -> std::string;
+        [[nodiscard]] auto _name() const -> std::string;
 
         /**
          * @brief Getter
+         *
          * @return t_name
          */
-        [[nodiscard]] auto description() const -> std::string;
+        [[nodiscard]] auto _description() const -> std::string;
 
         /**
          * @brief Getter
+         *
          * @return t_name
          */
-        [[nodiscard]] auto location() const -> std::filesystem::path;
+        [[nodiscard]] auto _location() const -> std::filesystem::path;
 
         /**
          * @brief Getter
+         *
          * @return t_name
          */
-        [[nodiscard]] auto
-        iterator() const -> std::filesystem::directory_iterator;
+        [[nodiscard]] auto _iterator() const
+                -> std::vector<trash_item>::const_iterator;
 
         // Operators
 
         /**
          * @brief Copy operator
+         *
          * @param other Trash object to copy
          * @return *this
          */
-        auto operator=(const trash &other) -> trash &;
+        auto operator=(const trash_context &other) -> trash_context &;
 
         /**
          * @brief Move operator
+         *
          * @param other Trash object to move
          * @return *this
          */
-        auto operator=(trash &&other) noexcept -> trash &;
+        auto operator=(trash_context &&other) noexcept -> trash_context &;
 
         /**
          * @brief Equality operator
+         *
          * @param other Trash object to compare
          * @return bool - true if locations are equal
          */
-        auto operator==(const trash &other) const -> bool;
+        auto operator==(const trash_context &other) const -> bool;
 
         /**
          * @brief Inequality operator
+         *
          * @param other Trash object to compare
          * @return bool - true if locations are inequal
          */
-        auto operator!=(const trash &other) const -> bool;
-
-        /* TODO: Note, this is not a good idea to do like this.
-         * We should be aiming to manage all trashed files as a new object class,
-         * and this will allow us to include better completions for this as well.
-         * It also lets us handle file metadata better than typedef-ing.
-         */
-
-        /* TODO: It might be worth moving this to its own repo, to have a
-         * full-featured libtrash library for C++ trash handling, and in that
-         * have full OS-specific trash definitions. Alternatively, we can handle
-         * it all under this repo, and just have it be included within ctrash.
-         * It's worth considering early on at the least.
-         */
+        auto operator!=(const trash_context &other) const -> bool;
 
         /**
          * @brief Send file to trash
+         *
          * @param f_delete Path of file to trash
          * @return Path to file deleted.
          */
-        auto operator+=
-        (std::filesystem::path f_delete) -> std::filesystem::path &;
+        auto operator+=(std::filesystem::path f_delete)
+                -> std::filesystem::path &;
 
         /**
          * @brief Restore file from trash
+         *
          * @param f_restore Path of file to restore
          * @return Path to file restored.
          */
-        auto operator-=
-        (std::filesystem::path f_restore) -> std::filesystem::path &;
+        auto operator-=(std::filesystem::path f_restore)
+                -> std::filesystem::path &;
 
-        friend auto operator<<
-        (std::ostream &os, const trash &trash) -> std::ostream &;
+        friend auto operator<<(std::ostream &os, const trash_context &t_context)
+                -> std::ostream &;
     };
-}
+} // namespace ctrash
