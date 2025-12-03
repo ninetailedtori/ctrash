@@ -153,7 +153,7 @@ namespace ctrash
         /**
          * @brief Default constructor
          */
-        trash_context() = default;
+        trash_context();
 
         /**
          * @brief Name Constructor.
