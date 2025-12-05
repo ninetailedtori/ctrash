@@ -71,7 +71,8 @@ if systemd.found()
 endif
 
 src_files = files(
-    'src/trash.hpp',
+    'src/trash_item.hpp',
+    'src/trash_context.hpp',
     'src/ctrash.cpp'
 )
 
